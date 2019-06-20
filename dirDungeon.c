@@ -10,6 +10,8 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #define DELAY 50000
 
@@ -19,7 +21,6 @@
 #define RIGHT 2
 #define DOWN 3
 #define LEFT 4
-
 
 //creates a player struct to keep track of position and movement
 typedef struct{ int x, y, dir; bool alive;} player_object;
@@ -50,8 +51,66 @@ int main(int argc, char *argv[]) {
     player.y = max_y / 2;
     player.alive = TRUE;
 
+
     //loop for game
     for (nodelay(stdscr, TRUE); TRUE; usleep(DELAY)) {
+
+        int num_dirs = 0;
+        FILE *file1;
+        char dirs1[1035];
+        int MAX = sizeof(dirs1);
+        file1 = popen("/bin/ls", "r");
+        while(fgets(dirs1, MAX-1, file1) != NULL) num_dirs++;
+        pclose(file1);
+
+        FILE *file2;
+        char dirs2[1035];
+        file2 = popen("/bin/ls", "r");
+        char dir_names[num_dirs][1035];
+        int idx = 0;
+        while(fgets(dirs2, MAX-1, file2) != NULL){
+            strcpy(dir_names[idx], dirs2);
+            idx++;
+        }
+        pclose(file2);
+
+        int x_diff = max_x/(num_dirs+1);
+        int x_pos = x_diff;
+        for(int i = 0; i < num_dirs; i++) {
+            mvprintw(max_y/4, x_pos, "%s", dir_names[i]);
+            x_pos += x_diff;
+        }
+
+/*
+        // extracts current directory 
+        FILE *file1, *file2;
+        char dirs1[1035], dirs2[1035];
+        int num_dirs = 0;
+        int MAX = sizeof(dirs1);
+
+        file1 = popen("/bin/ls", "r");
+        while(fgets(dirs1, MAX-1, file1) != NULL) num_dirs++;
+        mvprintw(max_y/2, max_x/2, "%s", num_dirs);
+        pclose(file1);
+        file2 = popen("/bin/ls", "r");
+        char dir_names[num_dirs][1035];
+        int idx = 0;
+        while(fgets(dirs2, MAX-1, file2) != NULL){
+            strcpy(dir_names[idx], dirs2);
+            idx++;
+        }
+        pclose(file2);
+        
+
+        int y_diff = max_y/(num_dirs-1);
+        int y_pos = y_diff;
+        for(int i = 0; i < num_dirs; i++){
+            //mvprintw(y_pos, max_x-30, "%s", dir_names[i]);
+            y_pos += y_diff;
+            //printf("%s", dir_names[i]);
+        }
+*/
+
 
         // Get user input to change game state
         int c;
@@ -87,6 +146,8 @@ int main(int argc, char *argv[]) {
             }
         }
 
+
+
         // Draw player
         mvprintw(player.y-1, player.x, "O");
         mvprintw(player.y, player.x, "|");
@@ -98,6 +159,7 @@ int main(int argc, char *argv[]) {
             mvprintw(player.y+1, player.x+1, "\\");
             mvprintw(player.y+1, player.x-1, "/");
         } else {
+            // walking animation
             mvprintw(player.y+1, player.x, "|");
         }
 
@@ -111,6 +173,9 @@ int main(int argc, char *argv[]) {
             mvprintw(y, max_x-1, "|");
         }
 
+
+
+        // clears the screen for next frame
         refresh();
         clear();
     }
