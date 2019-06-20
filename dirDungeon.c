@@ -55,6 +55,8 @@ int main(int argc, char *argv[]) {
     //loop for game
     for (nodelay(stdscr, TRUE); TRUE; usleep(DELAY)) {
 
+
+        // extracts current directory's files/dirs and displays them
         int num_dirs = 0;
         FILE *file1;
         char dirs1[1035];
@@ -81,35 +83,6 @@ int main(int argc, char *argv[]) {
             x_pos += x_diff;
         }
 
-/*
-        // extracts current directory 
-        FILE *file1, *file2;
-        char dirs1[1035], dirs2[1035];
-        int num_dirs = 0;
-        int MAX = sizeof(dirs1);
-
-        file1 = popen("/bin/ls", "r");
-        while(fgets(dirs1, MAX-1, file1) != NULL) num_dirs++;
-        mvprintw(max_y/2, max_x/2, "%s", num_dirs);
-        pclose(file1);
-        file2 = popen("/bin/ls", "r");
-        char dir_names[num_dirs][1035];
-        int idx = 0;
-        while(fgets(dirs2, MAX-1, file2) != NULL){
-            strcpy(dir_names[idx], dirs2);
-            idx++;
-        }
-        pclose(file2);
-        
-
-        int y_diff = max_y/(num_dirs-1);
-        int y_pos = y_diff;
-        for(int i = 0; i < num_dirs; i++){
-            //mvprintw(y_pos, max_x-30, "%s", dir_names[i]);
-            y_pos += y_diff;
-            //printf("%s", dir_names[i]);
-        }
-*/
 
 
         // Get user input to change game state
