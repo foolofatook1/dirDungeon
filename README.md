@@ -1,7 +1,5 @@
-#Directory Dungeon Game
+# Directory Dungeon Game
 
-"""
-To compile: 
+## To compile: ##
 
     make
-"""
