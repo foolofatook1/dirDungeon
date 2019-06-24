@@ -1,5 +1,5 @@
-# Directory Dungeon Game
+# The Dungeon of Dir (TDD)
 
-## To compile: ##
+### To compile: ###
 
     make
