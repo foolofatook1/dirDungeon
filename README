@@ -1,7 +1,0 @@
-Dir Dungeon Game (name is temporary lol, unless you like it jacob)
-
-
-to compile: 
-
-    gcc -lncurses -o dirDun dirDungeon.c
-
