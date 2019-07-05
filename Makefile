@@ -1,1 +1,2 @@
-lcc -o dirDungeon dirDungeon.c -lncurses
+all:
+	cc -o dirDungeon dirDungeon.c -lncurses

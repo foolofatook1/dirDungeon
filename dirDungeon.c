@@ -8,148 +8,118 @@
  */
 
 #include <ncurses.h>
-#include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 
-#define DELAY 50000
+typedef struct Player
+{
+    int x;
+    int y;
+    int hp;
+} Player;
 
-//movement macros
-#define STILL 0
-#define UP 1
-#define RIGHT 2
-#define DOWN 3
-#define LEFT 4
+int setup_screen(void);
+int setup_map(void);
+int handle_input(int input, Player *p);
+Player *setup_player(void);
+int move_player(int y, int x, Player *p);
 
-//creates a player struct to keep track of position and movement
-typedef struct{ int x, y, dir; bool alive;} player_object;
+int main (void)
+{
+    Player *player;
+    int input;
+    setup_screen();
+    setup_map();
+    player = setup_player();
+    while((input = getch()) != 'q')   // move the character
+    {
+        handle_input(input, player);
+    }
+    endwin(); // stop ncurses from running
 
-int max_x = 0, max_y = 0;
-bool walk_flag = true;
-
-void gameOver(void){
-	clear();
-	endwin();
-	exit(1);
+    return 1;
 }
 
-int main(int argc, char *argv[]) {
+/**
+ * Set up the screen. 
+ */
+int setup_screen(void)
+{
+    initscr();
+    noecho();
+    refresh(); //?
 
-    initscr();                              //initializes screen
-    if (has_colors() == TRUE) start_color();//enables color
-    cbreak();                               //disables character buffering
-    noecho();                               //does not print user input to screen
-    curs_set(FALSE);                        //does not display cursor
-    keypad(stdscr, TRUE);                   //enables all keyboard to be used
-    nodelay(stdscr, TRUE);                  //wont wait for input when getch() is used
-    getmaxyx(stdscr, max_y, max_x);         //retrieves dimensions of terminal screen
+    return 1;
+}
 
-    player_object player;
+/**
+ * Set up the map.
+ */
+int setup_map(void)
+{
+    mvprintw(13,13,"--------");
+    mvprintw(14,13,"|......|");
+    mvprintw(15,13,"|......|");
+    mvprintw(16,13,"|......|");
+    mvprintw(17,13,"|......|");
+    mvprintw(18,13,"--------");
+}
 
-    player.x = max_x / 2;
-    player.y = max_y / 2;
-    player.alive = TRUE;
+/**
+ * Set up the player,
+ * and draw them.
+ */
 
+Player *setup_player(void)
+{
+    Player *new_player;
+    new_player = malloc(sizeof(Player));
 
-    //loop for game
-    for (nodelay(stdscr, TRUE); TRUE; usleep(DELAY)) {
+    new_player->x = 14;
+    new_player->y = 14;
+    new_player->hp = 20;
 
+    mvprintw(new_player->y, new_player->x, "@");
+    move(new_player->y, new_player->x);
 
-        // extracts current directory's files/dirs and displays them
-        int num_dirs = 0;
-        FILE *file1;
-        char dirs1[1035];
-        int MAX = sizeof(dirs1);
-        file1 = popen("/bin/ls", "r");
-        while(fgets(dirs1, MAX-1, file1) != NULL) num_dirs++;
-        pclose(file1);
+    return new_player;
+}
 
-        FILE *file2;
-        char dirs2[1035];
-        file2 = popen("/bin/ls", "r");
-        char dir_names[num_dirs][1035];
-        int idx = 0;
-        while(fgets(dirs2, MAX-1, file2) != NULL){
-            strcpy(dir_names[idx], dirs2);
-            idx++;
-        }
-        pclose(file2);
-
-        int x_diff = max_x/(num_dirs+1);
-        int x_pos = x_diff;
-        for(int i = 0; i < num_dirs; i++) {
-            mvprintw(max_y/4, x_pos, "%s", dir_names[i]);
-            x_pos += x_diff;
-        }
-
-
-
-        // Get user input to change game state
-        int c;
-        if ((c = getch()) != ERR) {
-
-            switch (c) {
-            case 0x1B: case 127: case KEY_BACKSPACE:
-                gameOver();
-
-            case KEY_LEFT: case 'a': case 'A':
-                if(player.x > 2) player.x-=2;
-                player.dir=LEFT;
-                walk_flag=!walk_flag;
-                break;
-
-            case KEY_RIGHT: case 'd': case 'D':
-                if(player.x < max_x-4) player.x+=2;
-                player.dir=RIGHT;
-                walk_flag=!walk_flag;
-                break;
-
-            case KEY_UP: case 'w': case 'W':
-                if(player.y > 2) player.y-=1;
-                player.dir=UP;
-                walk_flag=!walk_flag;
-                break;
-
-            case KEY_DOWN: case 's': case 'S':
-                if(player.y < max_y-3) player.y+=1;
-                player.dir=DOWN;
-                walk_flag=!walk_flag;
-                break;
-            }
-        }
-
-
-
-        // Draw player
-        mvprintw(player.y-1, player.x, "O");
-        mvprintw(player.y, player.x, "|");
-        if(walk_flag == true){
-            //arms
-            mvprintw(player.y, player.x+1, "\\");
-            mvprintw(player.y, player.x-1, "/");
-            //legs
-            mvprintw(player.y+1, player.x+1, "\\");
-            mvprintw(player.y+1, player.x-1, "/");
-        } else {
-            // walking animation
-            mvprintw(player.y+1, player.x, "|");
-        }
-
-        // draws wall borders
-        for(int x = 0; x < max_x; x++){
-            mvprintw(0, x, "-");
-            mvprintw(max_y-1, x, "-");
-        }
-        for(int y = 0; y < max_y; y++){
-            mvprintw(y, 0, "|");
-            mvprintw(y, max_x-1, "|");
-        }
-
-
-
-        // clears the screen for next frame
-        refresh();
-        clear();
+int handle_input(int input, Player *p)
+{
+    switch(input)
+    {
+        case 'k':
+            /* go up */
+            move_player(p->y-1,p->x,p);  
+            break;
+        case 'j':
+            /* go down */
+            move_player(p->y+1,p->x,p);  
+            break;
+        case 'l':
+            /* go left */
+            move_player(p->y,p->x+1,p);
+            break;
+        case 'h':
+            /* go right */
+            move_player(p->y,p->x-1,p);
+            break;
+        default:
+            /* do nothing */
+            break;
     }
+
+    return 1;
+}
+
+int move_player(int y, int x, Player *p)
+{
+    mvprintw(p->y,p->x,".");
+    p->y = y;
+    p->x = x;
+    mvprintw(p->y,p->x,"@");
+    move(p->y, p->x);
+
+    return 1;
 }
