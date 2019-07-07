@@ -16,4 +16,7 @@ dirDungeon: main.o $(INCLUDE)
 	$(CC) -o $@ main.o $(INCLUDE) -lncurses
 
 play:
-	./dirDungeon
+	make clean; make; ./dirDungeon
+
+test:
+	make clean; make; valgrind --leak-check=full --show-leak-kinds=all ./dirDungeon

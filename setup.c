@@ -34,24 +34,32 @@ int setup_map(char **dirs)
     int dir_cnt = 0;
     if(dirs)
     {
-
+        
         for(i = 0; dirs[i] != NULL; ++i)
         {
+            /* create a temporary location of the directory */
+            char *tmp_file = malloc((strlen(dirs[i])+1)*
+                                          sizeof(char));
+            strcpy(tmp_file,"./");
+            strcat(tmp_file,dirs[i]);
+
             /* find out the number of files */
-            if(is_file(dirs[i]))
+            if(is_file(tmp_file))
             {
-                printw("%d) %s is a file\n", i, dirs[i]);
+                printw("%d) %s is a file\n", i, tmp_file);
                 ++file_cnt;
             }
             /* find out the amount of directories */
-            else if(!is_file(dirs[i]))
+            else if(!is_file(tmp_file))
             {
                 ++dir_cnt;
-                printw("%d) %s is a directory\n", i, dirs[i]);
+                printw("%d) %s is a directory\n", i, tmp_file);
             }
+            /* free the memory */
+            free(tmp_file);
         }
         printw("there are %d files and %d directories\n", 
-                file_cnt+1, dir_cnt+1);
+                file_cnt, dir_cnt);
     /* build the map based on the amount of directories */
     }
     
@@ -120,7 +128,6 @@ int get_dirs(void)
         {
             dirs[i] = malloc((strlen(dir->d_name)+1)*sizeof(char));
             strcpy(dirs[i], dir->d_name);
-            strcat(dirs[i], "\n");
             printf("%s", dirs[i]);
             ++i;
         }

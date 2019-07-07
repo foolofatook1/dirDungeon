@@ -43,6 +43,11 @@ int main (void)
 
     endwin(); // stop ncurses from running*/
 
+    /* free all of dirs */
+    for (i = 0; i < 1000; ++i)
+        free(dirs[i]);
+    free(dirs);
+
     return 0;
 }
 
