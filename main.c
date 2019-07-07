@@ -1,10 +1,10 @@
 /**
  * 
- * DirDungeon Game
+ * The Dungeons of Dir!
  * Using ncurses library
  * 
- * Jacob Fisher and Cullen Drissell
- * 
+ * By: Jacob Fisher and Cullen Drissell
+ * main.c
  */
 
 #include <ncurses.h>
@@ -19,15 +19,23 @@
  * Global Functions 
  */
 int handle_input(int input, Player *p);
-char *get_dirs(void);
 
 int main (void)
 {
+    /* get the list of current directories */
+    //char *dir_list;
+    //strcpy(dir_list, get_dirs());
+    get_dirs();
+
     getmaxyx(stdscr, MAX_Y, MAX_X);
     Player *player;
     int input;
     setup_screen();
-    setup_map();
+
+    /* utilizing the gathered list of dirs */
+    setup_map(dirs);        
+
+
     player = setup_player();
 
     while((input = getch()) != 'q')   // move the character
@@ -35,9 +43,13 @@ int main (void)
 
     endwin(); // stop ncurses from running*/
 
-    return 1;
+    return 0;
 }
 
+/**
+ * Basic movement input handler at the moment. 
+ * Will later handle more keys.
+ */
 int handle_input(int input, Player *p)
 {
     int new_y;
@@ -71,29 +83,6 @@ int handle_input(int input, Player *p)
 
     check_pos(new_y, new_x, p);
 
-    return 1;
+    return 0;
 }
 
-/**
- * Extract directory names.
- */
-char *get_dirs(void)
-{
-    DIR *d;
-    struct dirent *dir;
-    char dirs[1000];
-    d = opendir(".");
-    if(d)
-    {
-        while((dir = readdir(d)) != NULL)
-        {
-            printf("%s\n", dir->d_name);
-            strcat(dirs, dir->d_name);
-            strcat(dirs, "\n");
-        }
-        closedir(d);
-        printf("dirs: %s\n", dirs);
-    }
-
-    return dirs; 
-}

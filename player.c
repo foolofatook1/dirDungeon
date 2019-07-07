@@ -1,3 +1,7 @@
+/**
+ * player.c
+ */
+
 #include "player.h"
 
 #include <ncurses.h>
@@ -33,5 +37,5 @@ int move_player(int y, int x, Player *p)
     mvprintw(p->y,p->x,"@");
     move(p->y, p->x);
 
-    return 1;
+    return 0;
 }
