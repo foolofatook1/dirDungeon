@@ -7,7 +7,7 @@ BIN = dirDungeon
 all: $(BIN)
 
 clean:
-	rm -f *.o dirDungeon
+	rm -f *.o dirDungeon .*.swp
 
 $(INCLUDE):%.o:%.c
 	$(CC) -c -o $@ $< -lncurses

@@ -22,20 +22,12 @@ int handle_input(int input, Player *p);
 
 int main (void)
 {
-    /* get the list of current directories */
-    //char *dir_list;
-    //strcpy(dir_list, get_dirs());
-    get_dirs();
-
-    getmaxyx(stdscr, MAX_Y, MAX_X);
     Player *player;
     int input;
-    setup_screen();
 
-    /* utilizing the gathered list of dirs */
-    setup_map(dirs);        
-
-
+    setup_screen();         /* initscr, get dimensions, refresh, & noecho */
+    get_dirs();             /* get the list of current directories */
+    setup_map(dirs);        /* utilizing the gathered list of dirs */
     player = setup_player();
 
     while((input = getch()) != 'q')   // move the character

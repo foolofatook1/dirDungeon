@@ -20,6 +20,9 @@ int setup_screen(void)
 {
     initscr();
     noecho();
+
+    getmaxyx(stdscr, h, w);
+
     refresh(); //?
 
     return 0;
@@ -32,9 +35,17 @@ int setup_map(char **dirs)
 {
     int file_cnt = 0;
     int dir_cnt = 0;
+    int room_h = 0;
+    int room_w = 0;
+    int start_y = 0;
+    int start_x = 0;
     if(dirs)
     {
-        
+
+        /**
+         * This should be compartmentalized into 
+         * two functions (get_fc & get_dc) in the future maybe.
+         */
         for(i = 0; dirs[i] != NULL; ++i)
         {
             /* create a temporary location of the directory */
@@ -45,26 +56,50 @@ int setup_map(char **dirs)
 
             /* find out the number of files */
             if(is_file(tmp_file))
-            {
-                printw("%d) %s is a file\n", i, tmp_file);
                 ++file_cnt;
-            }
             /* find out the amount of directories */
             else if(!is_file(tmp_file))
-            {
                 ++dir_cnt;
-                printw("%d) %s is a directory\n", i, tmp_file);
-            }
-            /* free the memory */
+            /* free tmp_files memory */
             free(tmp_file);
         }
-        printw("there are %d files and %d directories\n", 
-                file_cnt, dir_cnt);
-    /* build the map based on the amount of directories */
-    }
-    
 
-    //printw("Number of files: %d\n", cnt);
+    }
+     
+     /* build the map based on the amount of directories */   
+
+     /****************************************************************
+      * Directories up will be doors (+) that lead to stairs up (>). *
+      * Directories down will be stairs down (<).                    *
+      * Files will be indicated by a bold green F in the room.       *
+      ****************************************************************/
+
+    /* for now the rooms will be square */
+    room_h = room_w = (file_cnt > dir_cnt)?((file_cnt*2)+1):((dir_cnt*2)+1); 
+    if(DEBUG)
+    {
+        printw("fc: %d  dc: %d\n", file_cnt, dir_cnt);
+        printw("room width: %d\n", room_w);
+    }
+
+    /* drawing the map */
+    /* 1) find starting x and y pos */
+    start_y = (h/2)-(room_h/2);
+    start_x = (w/2)-(room_w/2);
+    /* 2) draw the first */
+    for(i = 0; i <= room_w; ++i)
+        mvprintw(start_y, start_x+i, "-"); 
+    /* 3) draw the inside */
+    for(j = 1; j < room_h; ++j)
+    {
+        mvprintw(start_y+j, start_x, "|");
+        for(i = 1; i < room_w; ++i)
+            mvprintw(start_y+j, start_x+i, ".");
+        mvprintw(start_y+j, start_x+i, "|");
+    }
+    /* draw the last row */
+    for(i = 0; i <= room_w; ++i)
+        mvprintw(start_y+j, start_x+i, "-");
     /*mvprintw(13,13,"--------");
     mvprintw(14,13,"|......|");
     mvprintw(15,13,"|......|");
@@ -84,8 +119,8 @@ Player *setup_player(void)
     Player *new_player;
     new_player = malloc(sizeof(Player));
 
-    new_player->y = MAX_Y/2;
-    new_player->x = MAX_X/2;
+    new_player->y = h/2;
+    new_player->x = w/2;
     new_player->hp = 20; // may not be necessary
 
     mvprintw(new_player->y, new_player->x, "@");
