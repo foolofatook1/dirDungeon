@@ -82,4 +82,3 @@ int handle_input(int input, Player *p)
 
     return 0;
 }
-

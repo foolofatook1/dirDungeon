@@ -20,9 +20,7 @@ int setup_screen(void)
 {
     initscr();
     noecho();
-
     getmaxyx(stdscr, h, w);
-
     refresh(); //?
 
     return 0;
@@ -39,9 +37,9 @@ int setup_map(char **dirs)
     int room_w = 0;
     int start_y = 0;
     int start_x = 0;
+    char *c = "\0";
     if(dirs)
     {
-
         /**
          * This should be compartmentalized into 
          * two functions (get_fc & get_dc) in the future maybe.
@@ -53,20 +51,24 @@ int setup_map(char **dirs)
                                           sizeof(char));
             strcpy(tmp_file,"./");
             strcat(tmp_file,dirs[i]);
-
             /* find out the number of files */
             if(is_file(tmp_file))
+            {
                 ++file_cnt;
+                if(DEBUG)
+                    printw("%d) %s is a file.\n", i, tmp_file);
+            }
             /* find out the amount of directories */
-            else if(!is_file(tmp_file))
+            else 
+            {
                 ++dir_cnt;
+                if(DEBUG)
+                    printw("%d) %s is a direcotry.\n", i, tmp_file);
+            }
             /* free tmp_files memory */
             free(tmp_file);
         }
-
     }
-     
-     /* build the map based on the amount of directories */   
 
      /****************************************************************
       * Directories up will be doors (+) that lead to stairs up (>). *
@@ -74,7 +76,7 @@ int setup_map(char **dirs)
       * Files will be indicated by a bold green F in the room.       *
       ****************************************************************/
 
-    /* for now the rooms will be square */
+    /* for now the rooms will be "square" */
     room_h = room_w = (file_cnt > dir_cnt)?((file_cnt*2)+1):((dir_cnt*2)+1); 
     if(DEBUG)
     {
@@ -88,7 +90,10 @@ int setup_map(char **dirs)
     start_x = (w/2)-(room_w/2);
     /* 2) draw the first */
     for(i = 0; i <= room_w; ++i)
-        mvprintw(start_y, start_x+i, "-"); 
+    {
+        c = ((i+1)%(room_w/dir_cnt)==0)?"+":"-"; /*draw doors */
+        mvprintw(start_y, start_x+i, c); 
+    }
     /* 3) draw the inside */
     for(j = 1; j < room_h; ++j)
     {
@@ -99,13 +104,9 @@ int setup_map(char **dirs)
     }
     /* draw the last row */
     for(i = 0; i <= room_w; ++i)
+    {
         mvprintw(start_y+j, start_x+i, "-");
-    /*mvprintw(13,13,"--------");
-    mvprintw(14,13,"|......|");
-    mvprintw(15,13,"|......|");
-    mvprintw(16,13,"|......|");
-    mvprintw(17,13,"|......|");
-    mvprintw(18,13,"--------");*/
+    }
     
     return 0;
 }
