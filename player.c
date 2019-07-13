@@ -20,6 +20,11 @@ int check_pos(int new_y, int new_x, Player *p)
         case '.':
             move_player(new_y, new_x, p);
             break;
+        case '+':
+            move_player(new_y, new_x, p);
+            break;
+        case '#':
+            move_player(new_y, new_x, p);
         default:
             move(p->y,p->x);
             break;
@@ -31,11 +36,25 @@ int check_pos(int new_y, int new_x, Player *p)
  */
 int move_player(int y, int x, Player *p)
 {
-    mvprintw(p->y,p->x,".");
-    p->y = y;
-    p->x = x;
-    mvprintw(p->y,p->x,"@");
-    move(p->y, p->x);
+    switch(mvinch(y,x))
+    {
+        case '.':
+            mvprintw(p->y,p->x,".");
+            p->y = y;
+            p->x = x;
+            mvprintw(p->y,p->x,"@");
+            move(p->y, p->x);
+            break;
+        case '+':
+            mvprintw(p->y,p->x,"#");
+            p->y = y;
+            p->x = x;
+            mvprintw(p->y,p->x,"@");
+            move(p->y, p->x);
+            break;
+        default:
+            break;
+    }
 
     return 0;
 }

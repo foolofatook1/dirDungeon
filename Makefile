@@ -1,6 +1,6 @@
 CC = cc 
 
-INCLUDE = player.o setup.o
+INCLUDE = player.o setup.o 
 
 BIN = dirDungeon
 

@@ -3,6 +3,8 @@
  */
 
 #include "setup.h"
+#include "include.h"
+#include "room.h"
 
 #include <ncurses.h>
 #include <stdlib.h>
@@ -29,7 +31,7 @@ int setup_screen(void)
 /**
  * Set up the map.
  */
-int setup_map(char **dirs)
+Room *setup_map(char **dirs)
 {
     int file_cnt = 0;
     int dir_cnt = 0;
@@ -38,8 +40,15 @@ int setup_map(char **dirs)
     int start_y = 0;
     int start_x = 0;
     char *c = "\0";
+    int down = 0;  /* directories that go down */
+
+    Room *new_room;
+
     if(dirs)
     {
+        /* create a room first */
+        new_room = malloc(sizeof(Room));
+
         /**
          * This should be compartmentalized into 
          * two functions (get_fc & get_dc) in the future maybe.
@@ -48,7 +57,11 @@ int setup_map(char **dirs)
         {
             /* create a temporary location of the directory */
             char *tmp_file = malloc((strlen(dirs[i])+1)*
-                                          sizeof(char));
+                    sizeof(char));
+            /* every directory is going to have a directory back except root */
+            if(strcmp(tmp_file, "..")) down = 1;
+
+
             strcpy(tmp_file,"./");
             strcat(tmp_file,dirs[i]);
             /* find out the number of files */
@@ -68,47 +81,49 @@ int setup_map(char **dirs)
             /* free tmp_files memory */
             free(tmp_file);
         }
-    }
 
-     /****************************************************************
-      * Directories up will be doors (+) that lead to stairs up (>). *
-      * Directories down will be stairs down (<).                    *
-      * Files will be indicated by a bold green F in the room.       *
-      ****************************************************************/
+        /****************************************************************
+         * Directories up will be doors (+) that lead to stairs up (>). *
+         * Directories down will be stairs down (<).                    *
+         * Files will be indicated by a bold green F in the room.       *
+         ****************************************************************/
 
-    /* for now the rooms will be "square" */
-    room_h = room_w = (file_cnt > dir_cnt)?((file_cnt*2)+1):((dir_cnt*2)+1); 
-    if(DEBUG)
-    {
-        printw("fc: %d  dc: %d\n", file_cnt, dir_cnt);
-        printw("room width: %d\n", room_w);
-    }
+        /* for now the rooms will be "square" */
+        new_room->h = new_room->w = room_h = room_w = 
+            (file_cnt > dir_cnt)?((file_cnt*2)+1):(((dir_cnt*2)+1)-down); 
+        if(DEBUG)
+        {
+            printw("fc: %d  dc: %d\n", file_cnt, dir_cnt);
+            printw("room width: %d\n", room_w);
+        }
 
-    /* drawing the map */
-    /* 1) find starting x and y pos */
-    start_y = (h/2)-(room_h/2);
-    start_x = (w/2)-(room_w/2);
-    /* 2) draw the first */
-    for(i = 0; i <= room_w; ++i)
-    {
-        c = ((i+1)%(room_w/dir_cnt)==0)?"+":"-"; /*draw doors */
-        mvprintw(start_y, start_x+i, c); 
+        /* drawing the map */
+        /* 1) find starting x and y pos */
+        new_room->y = start_y = (h/2)-(room_h/2);
+        new_room->x = start_x = (w/2)-(room_w/2);
+        /* 2) draw the first */
+        for(i = 0; i <= room_w; ++i)
+        {
+            c = ((i+1)%(room_w/(dir_cnt-down))==0)?"+":"-"; /* choose between door and wall */
+            mvprintw(start_y, start_x+i, c);         /* draw them */
+        }
+        /* 3) draw the inside */
+        for(j = 1; j < room_h; ++j)
+        {
+            mvprintw(start_y+j, start_x, "|");
+            for(i = 1; i < room_w; ++i)
+                mvprintw(start_y+j, start_x+i, ".");
+            mvprintw(start_y+j, start_x+i, "|");
+        }
+        /* draw the last row */
+        for(i = 0; i <= room_w; ++i)
+            mvprintw(start_y+j, start_x+i, "-");
+
+        if(down == 1) mvprintw(start_y+j, (start_x+room_w/2), "+");
+            
+        return new_room;
     }
-    /* 3) draw the inside */
-    for(j = 1; j < room_h; ++j)
-    {
-        mvprintw(start_y+j, start_x, "|");
-        for(i = 1; i < room_w; ++i)
-            mvprintw(start_y+j, start_x+i, ".");
-        mvprintw(start_y+j, start_x+i, "|");
-    }
-    /* draw the last row */
-    for(i = 0; i <= room_w; ++i)
-    {
-        mvprintw(start_y+j, start_x+i, "-");
-    }
-    
-    return 0;
+    return new_room;
 }
 
 /**
@@ -168,7 +183,7 @@ int get_dirs(void)
             ++i;
         }
         closedir(d);
-        
+
         return 0;
     }
 

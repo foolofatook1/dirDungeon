@@ -22,8 +22,9 @@ int handle_input(int input, Player *p);
 
 int main (void)
 {
+    /* some variables for this game */
+    Room *room;
     Player *player;
-    int input;
 
     setup_screen();         /* initscr, get dimensions, refresh, & noecho */
     get_dirs();             /* get the list of current directories */
@@ -39,6 +40,8 @@ int main (void)
     for (i = 0; i < 1000; ++i)
         free(dirs[i]);
     free(dirs);
+    free(player);
+    free(room);
 
     return 0;
 }
